@@ -1,4 +1,4 @@
-# LinkNet
+# RedNet
 
 This repository contains the official implementation of the RedNet (Residual Encoder-Decoder Architecture). It turns out that the simple encoder-decoder structure is powerful when combined with residual learning. For further details of the network, please refer to our article [RedNet: Residual Encoder-Decoder Network for indoor RGB-D Semantic Segmentation](https://arxiv.org/abs/1806.01054).
 
