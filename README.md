@@ -26,7 +26,7 @@ The root path `SOMEPATH` should be passed to the program using the `--data-dir S
 
 For training, you can pass the following argument,
 
-```python3
+```
 python RedNet_train.py --cuda --data-dir /media/Datadrive/datasets/SUNRGB-D/
 ```
 
@@ -34,7 +34,7 @@ If you do not have enough GPU memory, you can pass the `--checkpoint` option to 
 
 For inference, you should run the [RedNet_inference.py](RedNet_inference.py) like this,
 
-```python3
+```
 python RedNet_inference.py --cuda --last-ckpt /path/to/pretrained/model.pth -r /path/to/rgb.png -d /path/to/depth.png -o /path/to/output.png
 ```
 
@@ -49,7 +49,7 @@ If you find this work to be helpful, please consider citing the paper,
       year={2018}
     }
 
-### License
+## License
 
 This software is released under a creative commons license which allows for personal and research use only.
 For a commercial license please contact the authors.
