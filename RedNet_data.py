@@ -19,13 +19,6 @@ img_dir_test_file = './data/img_dir_test.txt'
 depth_dir_test_file = './data/depth_dir_test.txt'
 label_dir_test_file = './data/label_test.txt'
 
-img_dir_train = None
-depth_dir_train = None
-label_dir_train = None
-img_dir_test = None
-depth_dir_test = None
-label_dir_test = None
-
 
 class SUNRGBD(Dataset):
     def __init__(self, transform=None, phase_train=True, data_dir=None):
@@ -33,96 +26,77 @@ class SUNRGBD(Dataset):
         self.phase_train = phase_train
         self.transform = transform
 
-        global img_dir_train, depth_dir_train, label_dir_train, \
-            img_dir_test, depth_dir_test, label_dir_test
-        if img_dir_train is None:
+        try:
+            with open(img_dir_train_file, 'r') as f:
+                self.img_dir_train = f.read().splitlines()
+            with open(depth_dir_train_file, 'r') as f:
+                self.depth_dir_train = f.read().splitlines()
+            with open(label_dir_train_file, 'r') as f:
+                self.label_dir_train = f.read().splitlines()
+            with open(img_dir_test_file, 'r') as f:
+                self.img_dir_test = f.read().splitlines()
+            with open(depth_dir_test_file, 'r') as f:
+                self.depth_dir_test = f.read().splitlines()
+            with open(label_dir_test_file, 'r') as f:
+                self.label_dir_test = f.read().splitlines()
+        except:
+            if data_dir is None:
+                data_dir = '/path/to/SUNRGB-D'
+            SUNRGBDMeta_dir = os.path.join(data_dir, 'SUNRGBDtoolbox/Metadata/SUNRGBDMeta.mat')
+            allsplit_dir = os.path.join(data_dir, 'SUNRGBDtoolbox/traintestSUNRGBD/allsplit.mat')
+            SUNRGBD2Dseg_dir = os.path.join(data_dir, 'SUNRGBDtoolbox/Metadata/SUNRGBD2Dseg.mat')
+            self.img_dir_train = []
+            self.depth_dir_train = []
+            self.label_dir_train = []
+            self.img_dir_test = []
+            self.depth_dir_test = []
+            self.label_dir_test = []
+            self.SUNRGBD2Dseg = h5py.File(SUNRGBD2Dseg_dir, mode='r', libver='latest')
 
-            try:
-                with open(img_dir_train_file, 'r') as f:
-                    self.img_dir_train = f.read().splitlines()
-                with open(depth_dir_train_file, 'r') as f:
-                    self.depth_dir_train = f.read().splitlines()
-                with open(label_dir_train_file, 'r') as f:
-                    self.label_dir_train = f.read().splitlines()
-                with open(img_dir_test_file, 'r') as f:
-                    self.img_dir_test = f.read().splitlines()
-                with open(depth_dir_test_file, 'r') as f:
-                    self.depth_dir_test = f.read().splitlines()
-                with open(label_dir_test_file, 'r') as f:
-                    self.label_dir_test = f.read().splitlines()
-            except:
-                if data_dir is None:
-                    data_dir = '/path/to/SUNRGB-D'
-                SUNRGBDMeta_dir = os.path.join(data_dir, 'SUNRGBDtoolbox/Metadata/SUNRGBDMeta.mat')
-                allsplit_dir = os.path.join(data_dir, 'SUNRGBDtoolbox/traintestSUNRGBD/allsplit.mat')
-                SUNRGBD2Dseg_dir = os.path.join(data_dir, 'SUNRGBDtoolbox/Metadata/SUNRGBD2Dseg.mat')
-                self.img_dir_train = []
-                self.depth_dir_train = []
-                self.label_dir_train = []
-                self.img_dir_test = []
-                self.depth_dir_test = []
-                self.label_dir_test = []
-                self.SUNRGBD2Dseg = h5py.File(SUNRGBD2Dseg_dir, mode='r', libver='latest')
+            SUNRGBDMeta = scipy.io.loadmat(SUNRGBDMeta_dir, squeeze_me=True,
+                                           struct_as_record=False)['SUNRGBDMeta']
+            split = scipy.io.loadmat(allsplit_dir, squeeze_me=True, struct_as_record=False)
+            split_train = split['alltrain']
 
-                SUNRGBDMeta = scipy.io.loadmat(SUNRGBDMeta_dir, squeeze_me=True,
-                                               struct_as_record=False)['SUNRGBDMeta']
-                split = scipy.io.loadmat(allsplit_dir, squeeze_me=True, struct_as_record=False)
-                split_train = split['alltrain']
-                split_test = split['alltest']
+            seglabel = self.SUNRGBD2Dseg['SUNRGBD2Dseg']['seglabel']
 
-                seglabel = self.SUNRGBD2Dseg['SUNRGBD2Dseg']['seglabel']
+            for i, meta in enumerate(SUNRGBDMeta):
+                meta_dir = '/'.join(meta.rgbpath.split('/')[:-2])
+                real_dir = meta_dir.replace('/n/fs/sun3d/data', data_dir)
+                depth_bfx_path = os.path.join(real_dir, 'depth_bfx/' + meta.depthname)
+                rgb_path = os.path.join(real_dir, 'image/' + meta.rgbname)
 
-                for i, meta in enumerate(SUNRGBDMeta):
-                    meta_dir = '/'.join(meta.rgbpath.split('/')[:-2])
-                    real_dir = meta_dir.replace('/n/fs/sun3d/data', data_dir)
-                    depth_bfx_path = os.path.join(real_dir, 'depth_bfx/' + meta.depthname)
-                    rgb_path = os.path.join(real_dir, 'image/' + meta.rgbname)
+                label_path = os.path.join(real_dir, 'label/label.npy')
 
-                    label_path = os.path.join(real_dir, 'label/label.npy')
+                if not os.path.exists(label_path):
+                    os.makedirs(os.path.join(real_dir, 'label'), exist_ok=True)
+                    label = np.array(self.SUNRGBD2Dseg[seglabel.value[i][0]].value.transpose(1, 0))
+                    np.save(label_path, label)
 
-                    if not os.path.exists(label_path):
-                        os.makedirs(os.path.join(real_dir, 'label'), exist_ok=True)
-                        label = np.array(self.SUNRGBD2Dseg[seglabel.value[i][0]].value.transpose(1, 0))
-                        np.save(label_path, label)
+                if meta_dir in split_train:
+                    self.img_dir_train = np.append(self.img_dir_train, rgb_path)
+                    self.depth_dir_train = np.append(self.depth_dir_train, depth_bfx_path)
+                    self.label_dir_train = np.append(self.label_dir_train, label_path)
+                else:
+                    self.img_dir_test = np.append(self.img_dir_test, rgb_path)
+                    self.depth_dir_test = np.append(self.depth_dir_test, depth_bfx_path)
+                    self.label_dir_test = np.append(self.label_dir_test, label_path)
 
-                    if meta_dir in split_train:
-                        self.img_dir_train = np.append(self.img_dir_train, rgb_path)
-                        self.depth_dir_train = np.append(self.depth_dir_train, depth_bfx_path)
-                        self.label_dir_train = np.append(self.label_dir_train, label_path)
-                    else:
-                        self.img_dir_test = np.append(self.img_dir_test, rgb_path)
-                        self.depth_dir_test = np.append(self.depth_dir_test, depth_bfx_path)
-                        self.label_dir_test = np.append(self.label_dir_test, label_path)
-
-                local_file_dir = '/'.join(img_dir_train_file.split('/')[:-1])
-                if not os.path.exists(local_file_dir):
-                    os.mkdir(local_file_dir)
-                with open(img_dir_train_file, 'w') as f:
-                    f.write('\n'.join(self.img_dir_train))
-                with open(depth_dir_train_file, 'w') as f:
-                    f.write('\n'.join(self.depth_dir_train))
-                with open(label_dir_train_file, 'w') as f:
-                    f.write('\n'.join(self.label_dir_train))
-                with open(img_dir_test_file, 'w') as f:
-                    f.write('\n'.join(self.img_dir_test))
-                with open(depth_dir_test_file, 'w') as f:
-                    f.write('\n'.join(self.depth_dir_test))
-                with open(label_dir_test_file, 'w') as f:
-                    f.write('\n'.join(self.label_dir_test))
-
-            img_dir_train = self.img_dir_train
-            depth_dir_train = self.depth_dir_train
-            label_dir_train = self.label_dir_train
-            img_dir_test = self.img_dir_test
-            depth_dir_test = self.depth_dir_test
-            label_dir_test = self.label_dir_test
-        else:
-            self.img_dir_train = img_dir_train
-            self.depth_dir_train = depth_dir_train
-            self.label_dir_train = label_dir_train
-            self.img_dir_test = img_dir_test
-            self.depth_dir_test = depth_dir_test
-            self.label_dir_test = label_dir_test
+            local_file_dir = '/'.join(img_dir_train_file.split('/')[:-1])
+            if not os.path.exists(local_file_dir):
+                os.mkdir(local_file_dir)
+            with open(img_dir_train_file, 'w') as f:
+                f.write('\n'.join(self.img_dir_train))
+            with open(depth_dir_train_file, 'w') as f:
+                f.write('\n'.join(self.depth_dir_train))
+            with open(label_dir_train_file, 'w') as f:
+                f.write('\n'.join(self.label_dir_train))
+            with open(img_dir_test_file, 'w') as f:
+                f.write('\n'.join(self.img_dir_test))
+            with open(depth_dir_test_file, 'w') as f:
+                f.write('\n'.join(self.depth_dir_test))
+            with open(label_dir_test_file, 'w') as f:
+                f.write('\n'.join(self.label_dir_test))
 
     def __len__(self):
         if self.phase_train:
