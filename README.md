@@ -27,7 +27,7 @@ The root path `SOMEPATH` should be passed to the program using the `--data-dir S
 For training, you can pass the following argument,
 
 ```
-python RedNet_train.py --cuda --data-dir /media/Datadrive/datasets/SUNRGB-D/
+python RedNet_train.py --cuda --data-dir /path/to/SOMEPATH
 ```
 
 If you do not have enough GPU memory, you can pass the `--checkpoint` option to enable the checkpoint container in PyTorch >= 0.4. For other configuration, such as batch size and learning rate, please check the ArgumentParser in [RedNet_train.py](RedNet_train.py).
