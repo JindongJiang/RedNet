@@ -16,7 +16,7 @@ The RedNet model is trained and evaluated with the [SUN RGB-D Benchmark suit](ht
 
 ```bash
 SOMEPATH # Some arbitrary path
-├── SUNRGBD # The unzip folder SUNRGBD.zip
+├── SUNRGBD # The unzip folder of SUNRGBD.zip
 └── SUNRGBDtoolbox # The unzip folder of SUNRGBDtoolbox.zip
 ```
 
@@ -37,6 +37,8 @@ For inference, you should run the [RedNet_inference.py](RedNet_inference.py) lik
 ```
 python RedNet_inference.py --cuda --last-ckpt /path/to/pretrained/model.pth -r /path/to/rgb.png -d /path/to/depth.png -o /path/to/output.png
 ```
+
+The pre-trained weight is released [here](https://drive.google.com/open?id=1J3jRBhetZUJOkKWrYgmFHI4r5ETBHIef) for result reproduction.
 
 ## Citation
 
