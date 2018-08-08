@@ -1,6 +1,6 @@
 # RedNet
 
-This repository contains the official implementation of the RedNet (Residual Encoder-Decoder Architecture). It turns out that the simple encoder-decoder structure is powerful when combined with residual learning. For further details of the network, please refer to our article [RedNet: Residual Encoder-Decoder Network for indoor RGB-D Semantic Segmentation](https://arxiv.org/abs/1806.01054).
+This repository contains the official implementation of the RedNet (Residual Encoder-Decoder Architecture). It turns out that the simple encoder-decoder structure is powerful when combined with residual learning. For further details of the network, please refer to our article [RedNet: Residual Encoder-Decoder Network for indoor RGB-D Semantic Segmentation](http://bit.ly/2MrIT78).
 
 ![alt text](figure/overall_structure.png  "Overall structure of RedNet")
 
@@ -38,7 +38,7 @@ For inference, you should run the [RedNet_inference.py](RedNet_inference.py) lik
 python RedNet_inference.py --cuda --last-ckpt /path/to/pretrained/model.pth -r /path/to/rgb.png -d /path/to/depth.png -o /path/to/output.png
 ```
 
-The pre-trained weight is released [here](https://drive.google.com/open?id=1J3jRBhetZUJOkKWrYgmFHI4r5ETBHIef) for result reproduction.
+The pre-trained weight is released [here](http://bit.ly/2KDLeu9) for result reproduction.
 
 ## Citation
 
